@@ -2,7 +2,7 @@ import type { RequestHandler } from './$types';
 import { error } from '@sveltejs/kit';
 import { Octokit } from '@octokit/rest';
 import type { GetResponseDataTypeFromEndpointMethod } from '@octokit/types';
-import { compare, genSalt, hash } from 'bcryptjs';
+import { compare, hash } from 'bcryptjs';
 
 // Get
 export const GET: RequestHandler = async ({ cookies, params }) => {
@@ -42,7 +42,7 @@ export const POST: RequestHandler = async ({ cookies, request, params }) => {
 	const gist = await octokit.gists.create({
 		files,
 		public: true,
-		description: await hash(code, await genSalt())
+		description: await hash(code, 10)
 	});
 
 	if (gist.status >= 400) throw error(500, 'Failed to create gist');
