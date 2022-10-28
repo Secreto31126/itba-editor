@@ -186,8 +186,8 @@
 	{#if data.status === 200 && data.files}
 		<Navbar bind:filename={filename_next} filelist={filenames_with_content} />
 		{#if file}
-			{#key filename}
-				{#key theme}
+			{#key theme}
+				{#key filename}
 					<Editor bind:content={file.content} {theme} {saving} />
 				{/key}
 			{/key}
