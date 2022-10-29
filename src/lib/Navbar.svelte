@@ -8,7 +8,7 @@
 	$: can_create =
 		filelist.length < 8 && // Less than 8 files
 		!!input_filename && // Input is not empty
-		/^[\w\.]+$/i.test(input_filename) && // Input is alphanumeric or dots
+		/^(?!gist)[\w.]+$/i.test(input_filename) && // Input is alphanumeric or dots and doesn't start with gist (API things)
 		input_filename.length < 16; // Input is less than 16 characters
 
 	function create(): void {

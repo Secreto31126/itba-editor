@@ -1,6 +1,8 @@
 import type { RequestHandler } from './$types';
 import { error } from '@sveltejs/kit';
 import { Octokit } from '@octokit/rest';
+import type { GetResponseDataTypeFromEndpointMethod } from '@octokit/types';
+import { compare, hash } from 'bcryptjs';
 
 // Get
 export const GET: RequestHandler = async ({ cookies, params }) => {
@@ -8,11 +10,20 @@ export const GET: RequestHandler = async ({ cookies, params }) => {
 	if (!token) throw error(401, 'Unauthorized');
 
 	const octokit = new Octokit({ auth: token });
-	const gist = await octokit.rest.gists.list();
 
-	if (gist.status >= 400) throw error(500, 'Failed to get gists');
+	const gists = await octokit.gists.list();
 
-	const project = gist.data.find((gist) => gist.description === params.code);
+	if (gists.status >= 400) throw error(500, 'Failed to get gists');
+
+	type get = GetResponseDataTypeFromEndpointMethod<typeof octokit.gists.list>;
+	let project: get | null = null;
+	for (const gist of gists.data) {
+		if (!gist.description) continue;
+		if (await compare(params.code, gist.description)) {
+			project = gist;
+			break;
+		}
+	}
 
 	if (!project) throw error(404, 'Project not found');
 
@@ -28,7 +39,11 @@ export const POST: RequestHandler = async ({ cookies, request, params }) => {
 	const { code } = params;
 
 	const octokit = new Octokit({ auth: token });
-	const gist = await octokit.rest.gists.create({ files, public: true, description: code });
+	const gist = await octokit.gists.create({
+		files,
+		public: true,
+		description: await hash(code, 10)
+	});
 
 	if (gist.status >= 400) throw error(500, 'Failed to create gist');
 
@@ -45,7 +60,7 @@ export const PUT: RequestHandler = async ({ cookies, request }) => {
 	if (!content || !filename || !id) throw error(400, 'Missing data');
 
 	const octokit = new Octokit({ auth: token });
-	const gist = await octokit.rest.gists.update({
+	const gist = await octokit.gists.update({
 		gist_id: id,
 		files: {
 			[filename]: { content }
@@ -67,7 +82,7 @@ export const DELETE: RequestHandler = async ({ cookies, request }) => {
 	if (!filename || !id) throw error(400, 'Missing data');
 
 	const octokit = new Octokit({ auth: token });
-	const gist = await octokit.rest.gists.update({
+	const gist = await octokit.gists.update({
 		gist_id: id,
 		files: {
 			[filename]: {}

@@ -14,6 +14,7 @@
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "next",
 		"@sveltejs/kit": "next",
+		"@types/bcryptjs": "^2.4.2",
 		"@typescript-eslint/eslint-plugin": "^5.27.0",
 		"@typescript-eslint/parser": "^5.27.0",
 		"autoprefixer": "^10.4.12",
@@ -34,6 +35,8 @@
 	"type": "module",
 	"dependencies": {
 		"@octokit/rest": "^19.0.5",
+		"@octokit/types": "^8.0.0",
+		"bcryptjs": "^2.4.3",
 		"monaco-editor": "^0.34.1"
 	}
 }

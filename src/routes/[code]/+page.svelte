@@ -37,9 +37,11 @@
 	// #endregion
 
 	// When saving is true, forces the editor to refresh the content
-	let saving: boolean = false;
+	let saving = false;
+
 	// -1 error, 0 saving, 1 saved
 	let saving_status: 0 | 1 | -1 = 0;
+
 	async function saveProgress(): Promise<void> {
 		// Don't save while saving
 		if (!file || saving) {
@@ -129,7 +131,7 @@
 	// #region Theme
 
 	let theme: string;
-	let theme_next: string = 'vs';
+	let theme_next = 'vs';
 	async function changeTheme(new_theme: string) {
 		await saveProgress();
 		theme = new_theme;
