@@ -24,17 +24,13 @@ export const actions: Actions = {
 
 		let permissions;
 		try {
-			permissions = await octokit.request('HEAD /');
+			permissions = await octokit.gists.list();
 		} catch (error) {
-			return invalid(401, { token, incorrect: true });
+			return invalid(401, { token, scope: true });
 		}
 
 		if (permissions.status >= 400) {
-			return invalid(401, { token, incorrect: true });
-		}
-
-		if (!permissions.headers['x-oauth-scopes']?.includes('gist')) {
-			return invalid(403, { token, scope: true });
+			return invalid(401, { token, scope: true });
 		}
 
 		let user;
@@ -45,7 +41,7 @@ export const actions: Actions = {
 		}
 
 		if (user.status >= 400 || !user.data) {
-			return invalid(401, { token, incorrect: true });
+			return invalid(401, { token, broken: true });
 		}
 
 		cookies.set('token', token, {
