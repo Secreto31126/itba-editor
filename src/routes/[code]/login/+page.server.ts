@@ -5,6 +5,7 @@ import { Octokit } from '@octokit/rest';
 export const load: PageServerLoad = async ({ cookies, params }) => {
 	// Don't allow the user to access the login page if they are already logged in
 	// The key must expire before being able to log in with a different account
+	if (import.meta.env.DEV) cookies.delete('token');
 	const token: string = cookies.get('token') ?? '';
 	if (token) throw redirect(302, `/${params.code}`);
 	return {};
@@ -20,14 +21,30 @@ export const actions: Actions = {
 		}
 
 		const octokit = new Octokit({ auth: token });
-		let github;
+
+		let permissions;
 		try {
-			github = await octokit.rest.users.getAuthenticated();
+			permissions = await octokit.request('HEAD /');
 		} catch (error) {
 			return invalid(401, { token, incorrect: true });
 		}
 
-		if (!github.data) {
+		if (permissions.status >= 400) {
+			return invalid(401, { token, incorrect: true });
+		}
+
+		if (!permissions.headers['x-oauth-scopes']?.includes('gist')) {
+			return invalid(403, { token, scope: true });
+		}
+
+		let user;
+		try {
+			user = await octokit.users.getAuthenticated();
+		} catch (error) {
+			return invalid(500, { token, internal: true });
+		}
+
+		if (user.status >= 400 || !user.data) {
 			return invalid(401, { token, incorrect: true });
 		}
 

@@ -14,7 +14,7 @@ export const load: PageServerLoad = async ({ cookies, fetch, params }) => {
 
 	// Log in and get the user's data
 	const octokit = new Octokit({ auth: token });
-	const github = await octokit.rest.users.getAuthenticated();
+	const github = await octokit.users.getAuthenticated();
 	// Maybe the token doesn't have permision to get the username (I don't think it's possible)
 	const username: string = github.data.login ?? '(unknown username)';
 
@@ -71,7 +71,7 @@ export const load: PageServerLoad = async ({ cookies, fetch, params }) => {
 
 		// No need to GET the gist, we just created it
 	} else {
-		const list = await octokit.rest.gists.get({
+		const list = await octokit.gists.get({
 			gist_id: project.id
 		});
 

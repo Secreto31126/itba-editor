@@ -4,13 +4,6 @@
 </script>
 
 <footer class="grid grid-cols-[1fr_min-content]">
-	<!-- <select bind:value={theme} class="max-w-min mx-4">
-		<option value="vs" selected>vs</option>
-		<option value="vs-dark">vs-dark</option>
-		<option value="hc-black">hc-black</option>
-		<option value="hc-light">hc-light</option>
-	</select> -->
-
 	<label for="theme" class="sr-only">Underline select</label>
 	<select
 		id="theme"
