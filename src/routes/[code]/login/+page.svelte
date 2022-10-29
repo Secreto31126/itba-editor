@@ -11,7 +11,7 @@
 
 <main class="flex flex-col justify-center text-center w-screen h-screen">
 	{#if form?.invalid}<p class="text-red-600">The token is required</p>{/if}
-	{#if form?.incorrect}<p class="text-red-600">Invalid token!</p>{/if}
+	{#if form?.broken}<p class="text-red-600">Unusable token! Get a new one</p>{/if}
 	{#if form?.scope}<p class="text-red-600">The token doesn't have the required scope: gists</p>{/if}
 	{#if form?.internal}<p class="text-red-600">Internal Error, try again</p>{/if}
 	<form method="POST" use:enhance class="flex justify-center items-center w-full">

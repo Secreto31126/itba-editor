@@ -18,10 +18,6 @@ export const load: PageServerLoad = async ({ cookies, fetch, params }) => {
 	// Maybe the token doesn't have permision to get the username (I don't think it's possible)
 	const username: string = github.data.login ?? '(unknown username)';
 
-	const files: {
-		[key: string]: { content: string };
-	} = {};
-
 	// Get the gist backup, if any
 	const get = await fetch(`/${code}/api`);
 
@@ -32,21 +28,24 @@ export const load: PageServerLoad = async ({ cookies, fetch, params }) => {
 		};
 	}
 
-	const project: { id: string } = get.status === 200 ? await get.json() : { id: '' };
-	console.log('/api GET body', project);
+	type files = {
+		[key: string]: { content: string };
+	};
+
+	const project: { id: string; files: files } =
+		get.status === 200 ? await get.json() : { id: '', files: {} };
 
 	// If there is no project, create one
 	if (!project?.id) {
 		const content = `¡Hola ${username}!\n\n${README}`;
-
-		files['README.md'] = { content };
+		project.files['README.md'] = { content };
 
 		const request = await fetch(`/${code}/api`, {
 			method: 'POST',
 			headers: {
 				'Content-Type': 'application/json'
 			},
-			body: JSON.stringify({ files })
+			body: JSON.stringify({ files: project.files })
 		});
 
 		if (request.status >= 400) {
@@ -57,7 +56,6 @@ export const load: PageServerLoad = async ({ cookies, fetch, params }) => {
 		}
 
 		const new_id = await request.text();
-		console.log('/api POST', new_id);
 
 		// If creation fails, display an error
 		if (!new_id) {
@@ -71,26 +69,22 @@ export const load: PageServerLoad = async ({ cookies, fetch, params }) => {
 
 		// No need to GET the gist, we just created it
 	} else {
-		const list = await octokit.gists.get({
-			gist_id: project.id
-		});
-
-		if (!list.data.files) {
+		if (!project.files) {
 			return {
 				status: 500,
 				reason: 'Failed to get gist'
 			};
 		}
 
-		for (const [filename, file] of Object.entries(list.data.files)) {
-			files[filename] = { content: file?.content ?? '' };
+		// TODO: Review this
+		for (const [filename, file] of Object.entries(project.files)) {
+			project.files[filename] = { content: file?.content ?? '' };
 		}
 	}
 
 	return {
 		status: 200,
-		username,
-		id: project.id,
-		files
+		...project,
+		username
 	};
 };
