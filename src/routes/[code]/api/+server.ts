@@ -22,11 +22,11 @@ function encrypt(text: string, key: string): string {
 	});
 }
 
-function decrypt(body: string, key: string): string {
-	const data = JSON.parse(body);
-
-	data.iv = Buffer.from(data.iv, 'base64');
-	data.content = Buffer.from(data.content, 'base64');
+function decrypt(json: { iv: string; content: string }, key: string): string {
+	const data: { iv: Buffer; content: Buffer } = {
+		iv: Buffer.from(json.iv, 'base64'),
+		content: Buffer.from(json.content, 'base64')
+	};
 
 	const decipher = createDecipheriv('aes-256-cbc', key, data.iv);
 	const desencrypted = decipher.update(data.content, 'base64', 'utf8') + decipher.final('utf8');
@@ -66,7 +66,14 @@ export const GET: RequestHandler = async ({ cookies, params }) => {
 		// Thanks TypeScript...
 		const ptr = project.files?.[file];
 		if (!ptr?.content) continue;
-		ptr.content = decrypt(ptr.content, createKey(code));
+		try {
+			const data = JSON.parse(ptr.content);
+			if (!data.iv || !data.content) throw new Error('Missing data');
+			ptr.content = decrypt(data, createKey(code));
+		} catch (e) {
+			console.error('Corrupted data detected', e);
+			throw error(500, 'Failed to decrypt project');
+		}
 	}
 
 	return json({
