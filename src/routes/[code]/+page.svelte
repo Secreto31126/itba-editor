@@ -38,6 +38,8 @@
 
 	// When saving is true, forces the editor to refresh the content
 	let saving: boolean = false;
+	// -1 error, 0 saving, 1 saved
+	let saving_status: 0 | 1 | -1 = 0;
 	async function saveProgress(): Promise<void> {
 		// Don't save while saving
 		if (!file || saving) {
@@ -45,13 +47,14 @@
 		}
 
 		saving = true;
+		saving_status = 0;
 
 		// Wait for the editor to update the content
 		await tick();
-		console.log(file.content);
 
+		let response;
 		if (file.content) {
-			await fetch(`${window.location.href}/api`, {
+			response = await fetch(`${window.location.href}/api`, {
 				method: 'PUT',
 				headers: {
 					'Content-Type': 'application/json'
@@ -63,7 +66,7 @@
 				})
 			});
 		} else {
-			await fetch(`${window.location.href}/api`, {
+			response = await fetch(`${window.location.href}/api`, {
 				method: 'DELETE',
 				headers: {
 					'Content-Type': 'application/json'
@@ -84,6 +87,12 @@
 			alert(`Se borró el archivo ${filename}`);
 		}
 
+		if (response.ok) {
+			saving_status = 1;
+		} else {
+			saving_status = -1;
+		}
+
 		saving = false;
 	}
 
@@ -91,7 +100,6 @@
 
 	// Save file when editor sends changes
 	$: if (browser && file?.content) {
-		console.log('Auto');
 		saveProgress();
 	}
 
@@ -99,10 +107,7 @@
 
 	// #region File change
 
-	$: console.log(filename, filename_next);
 	async function changeFile(new_filename: string) {
-		console.log('Change');
-
 		// Just to make sure if the file should have been deleted
 		await tick();
 
@@ -153,7 +158,6 @@
 
 		switch (handle) {
 			case 'save':
-				console.log('Keyboard');
 				await saveProgress();
 				return;
 			case 'next':
@@ -191,7 +195,7 @@
 					<Editor bind:content={file.content} {theme} {saving} />
 				{/key}
 			{/key}
-			<Footer {saving} bind:theme={theme_next} />
+			<Footer {saving_status} bind:theme={theme_next} />
 		{:else}
 			<p class="text-center">Pick or create a file to edit</p>
 		{/if}
