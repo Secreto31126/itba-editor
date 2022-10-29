@@ -75,11 +75,6 @@ export const load: PageServerLoad = async ({ cookies, fetch, params }) => {
 				reason: 'Failed to get gist'
 			};
 		}
-
-		// TODO: Review this
-		for (const [filename, file] of Object.entries(project.files)) {
-			project.files[filename] = { content: file?.content ?? '' };
-		}
 	}
 
 	return {
