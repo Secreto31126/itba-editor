@@ -2,7 +2,8 @@ import type { GetResponseDataTypeFromEndpointMethod } from '@octokit/types';
 import type { RequestHandler } from './$types';
 
 import { Octokit } from '@octokit/rest';
-import { compare, hash } from 'bcryptjs';
+import bcryptjs from 'bcryptjs';
+const { compare, hash } = bcryptjs;
 import { error, json } from '@sveltejs/kit';
 import { createKey, encrypt, decrypt } from '$lib/server/encryp';
 
