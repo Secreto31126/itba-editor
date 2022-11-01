@@ -1,9 +1,15 @@
 {
   "name": "Editor ITBA",
   "short_name": "Editor",
+  "description": "Progressive Web App to create and edit code, even offline.",
   "start_url": "/",
   "lang": "es",
   "icons": [
+    {
+      "src": "favicon-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
     {
       "src": "/android-chrome-192x192.png",
       "sizes": "192x192",
