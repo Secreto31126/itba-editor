@@ -1,13 +1,19 @@
 import type { PageServerLoad } from './$types';
 
+import manifest from '$static/manifest.json?raw';
 import { redirect } from '@sveltejs/kit';
 import { Octokit } from '@octokit/rest';
 import README from '$lib/README.md?raw';
 
 export const load: PageServerLoad = async ({ cookies, fetch, params }) => {
+	// If asking for manifest, return the manifest
+	const { code } = params;
+	if (code === 'manifest.json') {
+		return manifest;
+	}
+
 	// Get the token from the cookie
 	const token: string = cookies.get('token') ?? '';
-	const { code } = params;
 
 	// If there is no token, redirect to the login page
 	if (!token) throw redirect(302, `/${code}/login`);
